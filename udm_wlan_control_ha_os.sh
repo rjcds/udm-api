@@ -26,7 +26,8 @@ unifi_login() {
  # authenticate against unifi controller
  # Mute response by adding > /dev/null
  ${curl_cmd} -H "Content-Type: application/json" -D ${headers} -d "{\"password\":\"$unifi_password\",\"username\":\"$unifi_username\"}" $unifi_controller/api/auth/login > /dev/null
- csrf="$(awk -v FS=': ' '/^X-CSRF-Token/{print $unifi_password}' "${headers}" | tr -d '\r')"
+ # UDM/P ?v1.11.0 - header returns 'x-csrf-token', which requires a case-insensitive awk
+ csrf="$(awk -v IGNORECASE=1 -v FS=': ' '/^X-CSRF-Token/' "${headers}" | tr -d '\r')"
 }
 
 unifi_logout() {
