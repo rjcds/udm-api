@@ -20,7 +20,7 @@ unifi_login() {
 
 unifi_logout() {
  # logout
- ${curl_cmd} $unifi_controller/logout
+ ${curl_cmd} $unifi_controller/logout > /dev/null
 }
 
 enable_wifi() {
@@ -38,15 +38,18 @@ disable_wifi() {
 check_status() {
  # checks wifi network status
  # Mute response by adding > /dev/null
- response=$(${curl_cmd} "$unifi_controller"'/proxy/network/api/s/default/rest/wlanconf/'"$wifi_id" -H "${csrf}" --compressed)
+ response=$(${curl_cmd} "$unifi_controller"'/proxy/network/api/s/default/rest/wlanconf/'"$wifi_id" -H "${csrf}" --compressed) > /dev/null
  status=$(echo $response | jq ".data[0].enabled")
  if [ "$status" == "true" ]; then
  echo ENABLED
+ unifi_logout
  exit 0
  elif [ "$status" == "false" ]; then
  echo DISABLED
+ unifi_logout
  exit 1
  else
+ unifi_logout
  echo exit -1
  fi
 }
@@ -68,6 +71,7 @@ elif [ "$5" == "status" ]; then
  check_status
 else
  echo "Must include command line parameters [username] [password] [UDM address https://10.0.0.1] [WLAN_ID] [enable|disable|status]."
+ unifi_logout
  exit -1
 fi
 unifi_logout
